@@ -1,0 +1,167 @@
+---
+title: "T1D_analysis"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+knitr::opts_knit$set(global.par = TRUE)
+```
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+library(plyr)
+library(ggplot2)
+library(RColorBrewer)
+library(reshape2)
+library(gplots)
+library(gtools)
+library(stats)
+library(lattice)
+library(latticeExtra)
+library(grid)
+library(gridExtra)
+library(Rtsne)
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+
+## set baseDir if Knitting with RStudio button
+baseDir <- "~/Desktop/Su Lab/single_cell_T1D/"
+
+## sets path if run from runAnalysis.R
+#currentFile <- rstudioapi::getActiveDocumentContext()$path
+#baseDir <- gsub("single_cell_T1D/.*", "single_cell_T1D/", currentFile)
+
+#### source function scripts ####
+funcDir <- paste(baseDir, "src/functions/", sep="")
+funcFiles <- c("formatRaw.R", 
+               "dataLoadT1D.R", 
+               "cleanCt.R", 
+               "geneSetEnrichment.R", 
+               "violinPlot.R", 
+               "heatmap2_custom.R",
+               "heatmap.3.R",
+               "clusterFilter.R",
+               "tableBarPlots.R",
+               "clusterReport.R",
+               "reportViolins.R",
+               "reportTSNE.R",
+               "plotTSNE.R")
+funcFiles <- paste(funcDir, funcFiles, sep="")
+for(file in funcFiles){
+  source(file)
+}
+
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## load data
+ctTable <- dataLoadUCMAIT()
+
+## remove blood samples for now
+#ctTable <- subset(ctTable, cellSource != "blood")
+
+## remove tissue samples for now
+# ctTable <- subset(ctTable, cellSource != "tissue")
+## adjust the tag for blood_only analysis
+# ctTable[grep("UCM", ctTable$probe, fixed=TRUE), "cellSource"] <- "UCM"
+# ctTable[grep("NBD", ctTable$probe, fixed=TRUE), "cellSource"] <- "NBD"
+
+## calculate log2Ex, reformat ctTable, and normalize values
+ctNorm <- cleanCt(ctTable, summaryOutput=T, cumExpCutoff = F, normGene = "none")
+
+```
+
+
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## cluster and filter
+ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 9, plotHeatmap=T, plotClustOnly=F,
+                          heatmapFactor = "kmeans.cluster", heatmapColorBy = c("age", "probe"),
+                          heatmapTissueLabel = "UCMAIT samples",
+                          fisherTests = c("probe", "tissue", "age"),
+                         # fisherTests = NULL,
+                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = c(6))
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## cluster again to check performance
+ctClust <- subset(ctClust, select = -kmeans.cluster)
+ctClust <- clusterFilter(ctClust, testK = T, numCenters = 8, plotHeatmap=T, plotClustOnly=F,
+                          heatmapFactor = "kmeans.cluster",
+                          heatmapColorBy = c("age", "probe"),
+                          heatmapTissueLabel = "filtered UCMAIT samples",
+                          fisherTests = c("probe", "tissue", "age"),
+                         # fisherTests = NULL,
+                          cumulativeExpHist = T, filterClusters = F, clustersToRemove = NULL)
+
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+#### t-sne reports ####
+plotTSNE(ctClust, colorby = c("kmeans.cluster", "probe", "patient", "age"))
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+#### violins ####
+
+## Differentially expressed genes between cluster
+violinPlot(ctGenes=ctClust, 
+           byFactor="kmeans.cluster", 
+           factorOrder=c(1:5),
+           groupLabel="clusters", 
+           extraLabel="for human samples",
+           dotSize = 1.5, 
+           dotAlpha = 0.3)
+
+##  Differentially expressed genes between patients
+violinPlot(ctGenes=ctClust, 
+           byFactor="probe", 
+           factorOrder=c("UCM5", "UCM6", "UCM10", "UCM12", "UCM13", "UCM14", "UCM15", "UCM16", "UCM17", "NBD1", "NBD3", "NBD4"),
+           groupLabel="patients", 
+           extraLabel="for human samples",
+           dotSize = 1.5, 
+           dotAlpha = 0.3)
+
+##  Differentially expressed genes between tissues
+violinPlot(ctGenes=ctClust,
+           byFactor="cellSource",
+           factorOrder=c("blood", "tissue"),
+           groupLabel="tissues",
+           extraLabel="for human samples",
+           dotSize = 1.5,
+           dotAlpha = 0.3)
+
+##  Differentially expressed genes between tissues
+violinPlot(ctGenes=ctClust,
+           byFactor="age",
+           factorOrder=c("infl", "uninfl"),
+           groupLabel="tissues",
+           extraLabel="for human samples",
+           dotSize = 1.5,
+           dotAlpha = 0.3)
+
+##  Differentially expressed genes between phenotypes
+ctClust[grep("UCM", ctClust$probe, fixed=TRUE), "cellSource"] <- "UCM"
+ctClust[grep("NBD", ctClust$probe, fixed=TRUE), "cellSource"] <- "NBD"
+violinPlot(ctGenes=ctClust,
+           byFactor="cellSource",
+           factorOrder=c("UCM", "NBD"),
+           groupLabel="phenotypes",
+           extraLabel="for human samples",
+           dotSize = 1.5,
+           dotAlpha = 0.3)
+
+#### bottom ####
+```
+
+
+
+
