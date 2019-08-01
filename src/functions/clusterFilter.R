@@ -76,59 +76,58 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
     
     AnnoColors <- NULL
     ## label cells by age
+    ## age -> markers
     if("age" %in% heatmapColorBy){
       ctClust$ageColor <- NA
-      ctClust[which(ctClust$age=="6"), "ageColor"] <- "deepskyblue2"
-      ctClust[which(ctClust$age=="12"), "ageColor"] <- "peachpuff2"
-      ctClust[which(ctClust$age=="infl"), "ageColor"] <- "deepskyblue2"
-      ctClust[which(ctClust$age=="uninfl"), "ageColor"] <- "navy"
-      ctClust[which(ctClust$age=="blood"), "ageColor"] <- "orangered"
+      ctClust[which(ctClust$age=="12-20"), "ageColor"] <- "#9A8822"
+      ctClust[which(ctClust$age=="13-21"), "ageColor"] <- "#F5CDB4"
+      ctClust[which(ctClust$age=="CP11"), "ageColor"] <- "#F8AFA8"
+      ctClust[which(ctClust$age=="CP13"), "ageColor"] <- "#FDDDA0"
+      ctClust[which(ctClust$age=="CP18"), "ageColor"] <- "#74A089"
+      ctClust[which(ctClust$age=="CXCR3+/PD1-"), "ageColor"] <- "#FF0000"
+      ctClust[which(ctClust$age=="ICOS+/PD1-"), "ageColor"] <- "#556A5B"
+      ctClust[which(ctClust$age=="PD1-/CXCR3-"), "ageColor"] <- "#50A45C"
+      ctClust[which(ctClust$age=="PD1-/ICOS-"), "ageColor"] <- "#F2AD00"
+      ctClust[which(ctClust$age=="PD1+/CXCR3+"), "ageColor"] <- "#F69100"
+      ctClust[which(ctClust$age=="PD1+/ICOS-"), "ageColor"] <- "#C49647"
+      ctClust[which(ctClust$age=="PD1+/ICOS+"), "ageColor"] <- "#5BBCD6"
+
       Ages <- ctClust$ageColor
       ctClust <- subset(ctClust, select=-c(ageColor))
       AnnoColors <- cbind(AnnoColors, Ages)
     }
     
-    ## label cells by tissue
+    ## label cells by source: Child, Adult, Risk
     if("source" %in% heatmapColorBy){
       ctClust$sourceColor <- NA
-      ctClust[which(ctClust$cellSource=="LN"), "sourceColor"] <- "blue3"
-      ctClust[which(ctClust$cellSource=="I"), "sourceColor"] <- "orangered"
-      ctClust[which(ctClust$cellSource=="S"), "sourceColor"] <- "turquoise3"
-      ctClust[which(ctClust$cellSource=="PB"), "sourceColor"] <- "gold"
-      ctClust[which(ctClust$cellSource=="UCM"), "sourceColor"] <- "turquoise3"
-      ctClust[which(ctClust$cellSource=="NBD"), "sourceColor"] <- "gold"
-      ctClust[which(ctClust$cellSource=="blood"), "sourceColor"] <- "orangered"
-      ctClust[which(ctClust$cellSource=="tissue"), "sourceColor"] <- "blue"
+      ctClust[which(ctClust$cellSource=="Child"), "sourceColor"] <- "#FDE725FF"
+      ctClust[which(ctClust$cellSource=="Adult"), "sourceColor"] <- "#21908CFF"
+      ctClust[which(ctClust$cellSource=="Risk"), "sourceColor"] <- "#440154FF"
+      ctClust[which(ctClust$cellSource=="Healthy"), "sourceColor"] <- "gray48"
       Tissues <- ctClust$sourceColor
       ctClust <- subset(ctClust, select=-c(sourceColor))
       AnnoColors <- cbind(AnnoColors, Tissues)
     }
     
     ## label cells by probe
+    ## probe -> patients
     if("probe" %in% heatmapColorBy){
       ctClust$probeColor <- NA
-      ctClust[which(ctClust$probe=="Obsc"), "probeColor"] <- "#FB9A99"
-      ctClust[which(ctClust$probe=="12"), "probeColor"] <- "#A6CEE3"
-      ctClust[which(ctClust$probe=="13"), "probeColor"] <- "#1F78B4"
-      ctClust[which(ctClust$probe=="9D"), "probeColor"] <- "#B2DF8A"
-      ctClust[which(ctClust$probe=="9Q"), "probeColor"] <- "#33A02C"
-      ctClust[which(ctClust$probe=="IPDRp"), "probeColor"] <- "blue3"
-      ctClust[which(ctClust$probe=="DRn"), "probeColor"] <- "orangered"
-      ctClust[which(ctClust$probe=="UCM5"), "probeColor"] <- "#A6CEE3"
-      ctClust[which(ctClust$probe=="UCM6"), "probeColor"] <- "#1F78B4"
-      ctClust[which(ctClust$probe=="UCM9"), "probeColor"] <- "blue3"
-      ctClust[which(ctClust$probe=="UCM10"), "probeColor"] <- "turquoise"
-      ctClust[which(ctClust$probe=="UCM12"), "probeColor"] <- "navy"
-      ctClust[which(ctClust$probe=="UCM13"), "probeColor"] <- "maroon"
-      ctClust[which(ctClust$probe=="UCM14"), "probeColor"] <- "darkmagenta"
-      ctClust[which(ctClust$probe=="UCM15"), "probeColor"] <- "thistle3"
-      ctClust[which(ctClust$probe=="UCM16"), "probeColor"] <- "peru"
-      ctClust[which(ctClust$probe=="UCM17"), "probeColor"] <- "purple4"
-      ctClust[which(ctClust$probe=="NBD1"), "probeColor"] <- "#B2DF8A"
-      ctClust[which(ctClust$probe=="NBD3"), "probeColor"] <- "#33A02C"
-      ctClust[which(ctClust$probe=="NBD4"), "probeColor"] <- "yellow2"
-      ctClust[which(ctClust$probe=="NOD"), "probeColor"] <- "#33A02C"
-      ctClust[which(ctClust$probe=="b57"), "probeColor"] <- "yellow2"
+      ctClust[which(ctClust$probe=="Healthy"), "probeColor"] <- "gray19"
+      ctClust[which(ctClust$probe=="RAD1"), "probeColor"] <- "#DD8D29"
+      ctClust[which(ctClust$probe=="RAD2"), "probeColor"] <- "#E1C408"
+      ctClust[which(ctClust$probe=="RAD3"), "probeColor"] <- "#84BB78"
+      ctClust[which(ctClust$probe=="RAD4"), "probeColor"] <- "#859C78"
+      ctClust[which(ctClust$probe=="RAD5"), "probeColor"] <- "#DB6E07"
+      ctClust[which(ctClust$probe=="RAD6"), "probeColor"] <- "#B40F20"
+      ctClust[which(ctClust$probe=="TEY14"), "probeColor"] <- "#798E87"
+      ctClust[which(ctClust$probe=="TEY3"), "probeColor"] <- "#C27D38"
+      ctClust[which(ctClust$probe=="TEY6"), "probeColor"] <- "#CCC591"
+      ctClust[which(ctClust$probe=="TEY8"), "probeColor"] <- "#29211F"
+      ctClust[which(ctClust$probe=="TNET1"), "probeColor"] <- "#F3DF6C"
+      ctClust[which(ctClust$probe=="TNET2"), "probeColor"] <- "#CEAB07"
+      ctClust[which(ctClust$probe=="TNET3"), "probeColor"] <- "#D5D5D3"
+      ctClust[which(ctClust$probe=="TNET4"), "probeColor"] <- "#24281A"
       Probes <- ctClust$probeColor
       ctClust <- subset(ctClust, select=-c(probeColor))
       AnnoColors <- cbind(AnnoColors, Probes)
@@ -156,46 +155,41 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
       AnnoColors <- cbind(AnnoColors, Kmeans.clusters)
     }
     
-    ageColorKey <- rbind(c("6", "deepskyblue2"),
-                         c("12", "peachpuff2"),
-                         c("infl", "deepskyblue2"),
-                         c("uninfl", "navy"),
-                         c("blood", "orangered"))
+    ageColorKey <- rbind(c("12-20", "#9A8822"),
+                         c("13-21", "#F5CDB4"),
+                         c("CP11", "#F8AFA8"),
+                         c("CP13", "#FDDDA0"),
+                         c("CP18", "#74A089"),
+                         c("CXCR3+/PD1-", "#FF0000"),
+                         c("ICOS+/PD1-", "#556A5B"),
+                         c("PD1-/CXCR3-", "#50A45C"),
+                         c("PD1-/ICOS-", "#F2AD00"),
+                         c("PD1+/CXCR3+", "#F69100"),
+                         c("PD1+/ICOS-", "#C49647"),
+                         c("PD1+/ICOS+", "#5BBCD6"))
     ageColorKey <- ageColorKey[which(ageColorKey[,1] %in% ctClust$age),]
     
-    sourceColorKey <- rbind(c("I", "orangered"),
-                            c("LN", "#2B65EC"),
-                            c("S", "turquoise3"),
-                            c("PB", "gold"),
-                            c("UCM", "turquoise3"),
-                            c("NBD", "gold"),
-                            c("blood", "orangered"),
-                            c("tissue", "blue"))
+    sourceColorKey <- rbind(c("Child", "#FDE725FF"),
+                            c("Adult","#21908CFF"),
+                            c("Risk","#440154FF"),
+                            c("Healthy", "gray48"))
     sourceColorKey <- sourceColorKey[which(sourceColorKey[,1] %in% ctClust$cellSource),]
     
-    probeColorKey <- rbind(c("PI", "orange2"),
-                           c("Obsc", "#FB9A99"),
-                           c("12", "#A6CEE3"),
-                           c("13", "#1F78B4"),
-                           c("9D", "#B2DF8A"),
-                           c("9Q", "#33A02C"),
-                           c("IPDRp", "blue3"),
-                           c("DRn", "orangered"),
-                           c("UCM5", "#A6CEE3"),
-                           c("UCM6", "#1F78B4"),
-                           c("UCM9", "blue3"),
-                           c("UCM10", "turquoise"),
-                           c("UCM12", "navy"),
-                           c("UCM13", "maroon"),
-                           c("UCM14", "darkmagenta"),
-                           c("UCM15", "thistle3"),
-                           c("UCM16", "peru"),
-                           c("UCM17", "purple4"),
-                           c("NBD1", "#B2DF8A"),
-                           c("NBD3", "#33A02C"),
-                           c("NBD4", "yellow2"),
-                           c("NOD", "#33A02C"),
-                           c("b57", "yellow2"))
+    probeColorKey <- rbind(c("Healthy", "gray19"),
+                           c("RAD1", "#DD8D29"),
+                           c("RAD2", "#E1C408"),
+                           c("RAD3", "#84BB78"),
+                           c("RAD4", "#859C78"),
+                           c("RAD5", "#DB6E07"),
+                           c("RAD6", "#B40F20"),
+                           c("TEY14", "#798E87"),
+                           c("TEY3", "#C27D38"),
+                           c("TEY6", "#CCC591"),
+                           c("TEY8", "#29211F"),
+                           c("TNET1", "#F3DF6C"),
+                           c("TNET2", "#CEAB07"),
+                           c("TNET3", "#D5D5D3"),
+                           c("TNET4", "#24281A"))
     probeColorKey <- probeColorKey[which(probeColorKey[,1] %in% ctClust$probe),]
     
     insetX <- 0.256
@@ -249,23 +243,23 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
                legend=ageColorKey[,1],
                fill=ageColorKey[,2], 
                title="age",
-               border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.15))
-        insetX <- insetX + 0.06
+               border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.05))
+        insetX <- insetX + 0.12
       }
       if("source" %in% heatmapColorBy){
         legend("topleft",
                legend=sourceColorKey[,1],
                fill=sourceColorKey[,2], 
                title="tissue",
-               border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.15))
-        insetX <- insetX + 0.06
+               border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.05))
+        insetX <- insetX + 0.12
       }
       if("probe" %in% heatmapColorBy){
         legend("topleft",
                legend=probeColorKey[,1],
                fill=probeColorKey[,2], 
                title="probe",
-             border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.15))
+             border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.05))
       insetX <- insetX + 0.075
         #         border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.1))
         # insetX <- insetX + 0.08
@@ -275,7 +269,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
                legend=clusterVals,
                fill=extraColorPalette[1:length(clusterVals)], 
                title="cluster",
-               border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.15))
+               border=FALSE, bty="n", y.intersp = 0.7, cex=1.85, inset=c(insetX,0.05))
       }
     }
       
@@ -315,7 +309,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
       ## probe
       if("probe" %in% fisherTests){
         probes <- unique(ctClust$probe)
-        probes <- probes[match(c("PI", "12", "13", "9D", "9Q", "Obsc", "IPDRp", "DRn", "UCM5", "UCM6", "UCM9", "UCM10", "UCM12", "UCM13", "UCM14", "UCM15", "UCM16", "UCM17", "NBD1", "NBD3", "NBD4"), probes, nomatch=F)]
+        probes <- probes[match(c("Healthy","RAD1","RAD2","RAD3","RAD4","RAD5","RAD6","TEY3","TEY6","TEY8","TEY14","TNET1","TNET2","TNET3","TNET4"), probes, nomatch=F)]
         probeTable <- matrix(nrow=length(clusterVals), ncol=length(probes))
         for(i in 1:length(clusterVals)){
           for(j in 1:length(probes)){
@@ -327,7 +321,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         rownames(probeTable) <- paste("cluster_", clusterVals, sep="")
         print("     ", quote=F)
         print("     ", quote=F)
-        print("Probe vs. Cluster", quote=F)
+        print("Patient vs. Cluster", quote=F)
         # print(probeTable)
         print(probeTable, quote = F)
         # print(fisher.test(factor(ctClust$probe), factor(ctClust$kmeans.cluster), workspace = 1000000000))
@@ -337,10 +331,11 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         probeTablePlots <- tableBarPlots(plotFactor = "probe", plotFactorVals = probes, clusterVals = clusterVals, factorTable = probeTable, colorKey = probeColorKey)
       }
       
-      ## tissue
+      
+      ## patient cohorts
       if("tissue" %in% fisherTests){
         cellSources <- unique(ctClust$cellSource)
-        cellSources <- cellSources[match(c("I", "LN", "S", "PB", "UCM", "NBD", "blood", "tissue"), cellSources, nomatch=F)]
+        cellSources <- cellSources[match(c("Child","Adult","Risk","Healthy"), cellSources, nomatch=F)]
         sourceTable <- matrix(nrow=length(clusterVals), ncol=length(cellSources))
         for(i in 1:length(clusterVals)){
           for(j in 1:length(cellSources)){
@@ -352,7 +347,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         rownames(sourceTable) <- paste("cluster_", clusterVals, sep="")
         print("     ", quote=F)
         print("     ", quote=F)
-        print("Tissue vs. Cluster", quote=F)
+        print("Cohort vs. Cluster", quote=F)
         print(sourceTable)
         # print(fisher.test(factor(ctClust$cellSource), factor(ctClust$kmeans.cluster), workspace = 1000000000))
         print(chisq.test(sourceTable, simulate.p.value=T))
@@ -376,7 +371,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         rownames(ageTable) <- paste("cluster_", clusterVals, sep="")
         print("     ", quote=F)
         print("     ", quote=F)
-        print("age vs. Cluster", quote=F)
+        print("Marker vs. Cluster", quote=F)
         print(ageTable)
         # print(fisher.test(factor(ctClust$age), factor(ctClust$kmeans.cluster), workspace = 1000000000))
         print(chisq.test(ageTable, simulate.p.value=T))
@@ -409,7 +404,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
       if("probe.age" %in% fisherTests){
         ctClust$probe.age <- paste(ctClust$probe, ctClust$age, sep = ".")
         probes <- unique(ctClust$probe)
-        probes <- probes[match(c("PI", "12", "13", "9D", "9Q", "Obsc", "UCM9", "UCM10", "UCM12", "UCM13", "UCM14", "UCM15", "UCM16", "UCM17", "NBD1", "NBD3", "NBD4"), probes, nomatch=F)]
+        probes <- probes[match(c("Healthy","RAD1","RAD2","RAD3","RAD4","RAD5","RAD6","TEY3","TEY6","TEY8","TEY14","TNET1","TNET2","TNET3","TNET4"), probes, nomatch=F)]
         ages <- unique(ctClust$age)
         ages <- ages[order(as.numeric(ages))]
         eg <- expand.grid(probes, ages)
@@ -429,7 +424,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         
         print("     ", quote=F)
         print("     ", quote=F)
-        print("Probe.Age vs. Cluster", quote=F)
+        print("Patient.Marker vs. Cluster", quote=F)
         # print(probeTable)
         print(probe.ageTable, quote = F)
         # print(fisher.test(factor(ctClust$probe), factor(ctClust$kmeans.cluster), workspace = 1000000000))
@@ -450,9 +445,9 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
       if("probe.tissue" %in% fisherTests){
         ctClust$probe.tissue <- paste(ctClust$probe, ctClust$cellSource, sep = ".")
         probes <- unique(ctClust$probe)
-        probes <- probes[match(c("PI", "12", "13", "9D", "9Q", "Obsc"), probes, nomatch=F)]
+        probes <- probes[match(c("Healthy","RAD1","RAD2","RAD3","RAD4","RAD5","RAD6","TEY3","TEY6","TEY8","TEY14","TNET1","TNET2","TNET3","TNET4"), probes, nomatch=F)]
         tissues <- unique(ctClust$cellSource)
-        tissues <- tissues[match(c("I", "LN", "S", "PB"), tissues, nomatch=F)]
+        tissues <- tissues[match(c("Child","Adult","Risk","Healthy"), tissues, nomatch=F)]
         eg <- expand.grid(probes, tissues)
         probes.tissues <- sprintf('%s.%s', eg[,1], eg[,2])
         
@@ -470,7 +465,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         
         print("     ", quote=F)
         print("     ", quote=F)
-        print("Probe.Tissue vs. Cluster", quote=F)
+        print("Patient.Cohort vs. Cluster", quote=F)
         # print(probeTable)
         print(probe.tissueTable, quote = F)
         # print(fisher.test(factor(ctClust$probe), factor(ctClust$kmeans.cluster), workspace = 1000000000))
@@ -490,7 +485,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         ctClust$age.tissue <- paste(ctClust$age, ctClust$cellSource, sep = ".")
         
         cellSources <- unique(ctClust$cellSource)
-        cellSources <- cellSources[match(c("I", "LN", "S", "PB"), cellSources, nomatch=F)]
+        cellSources <- cellSources[match(c("Child","Adult","Risk","Healthy"), cellSources, nomatch=F)]
         ages <- unique(ctClust$age)
         ages <- ages[order(as.numeric(ages))]
         
@@ -511,7 +506,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         
         print("     ", quote=F)
         print("     ", quote=F)
-        print("Age.Tissue vs. Cluster", quote=F)
+        print("Marker.Cohort vs. Cluster", quote=F)
         # print(probeTable)
         print(age.tissueTable, quote = F)
         # print(fisher.test(factor(ctClust$probe), factor(ctClust$kmeans.cluster), workspace = 1000000000))
@@ -534,9 +529,9 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         ctClust$probe.tissue.age <- paste(ctClust$probe, ctClust$cellSource, ctClust$age, sep = ".")
       
         cellSources <- unique(ctClust$cellSource)
-        cellSources <- cellSources[match(c("I", "LN", "S", "PB"), cellSources, nomatch=F)]
+        cellSources <- cellSources[match(c("Child","Adult","Risk","Healthy"), cellSources, nomatch=F)]
         probes <- unique(ctClust$probe)
-        probes <- probes[match(c("PI", "12", "13", "9D", "9Q", "Obsc"), probes, nomatch=F)]
+        probes <- probes[match(c("Healthy","RAD1","RAD2","RAD3","RAD4","RAD5","RAD6","TEY3","TEY6","TEY8","TEY14","TNET1","TNET2","TNET3","TNET4"), probes, nomatch=F)]
         ages <- unique(ctClust$age)
         ages <- ages[order(as.numeric(ages))]
         
@@ -557,7 +552,7 @@ clusterFilter <- function(ctInput, testK = F, numCenters = 2, plotHeatmap=F, plo
         
         print("     ", quote=F)
         print("     ", quote=F)
-        print("Probe.Tissue.Age vs. Cluster", quote=F)
+        print("Patient.Cohort.Marker vs. Cluster", quote=F)
         # print(probeTable)
         print(probe.tissue.ageTable, quote = F)
         # print(fisher.test(factor(ctClust$probe), factor(ctClust$kmeans.cluster), workspace = 1000000000))

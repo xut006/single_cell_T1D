@@ -21,6 +21,7 @@ library(lattice)
 library(latticeExtra)
 library(grid)
 library(gridExtra)
+library(wesanderson)
 library(Rtsne)
 ```
 
@@ -59,16 +60,7 @@ for(file in funcFiles){
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## load data
-ctTable <- dataLoadUCMAIT()
-
-## remove blood samples for now
-#ctTable <- subset(ctTable, cellSource != "blood")
-
-## remove tissue samples for now
-# ctTable <- subset(ctTable, cellSource != "tissue")
-## adjust the tag for blood_only analysis
-# ctTable[grep("UCM", ctTable$probe, fixed=TRUE), "cellSource"] <- "UCM"
-# ctTable[grep("NBD", ctTable$probe, fixed=TRUE), "cellSource"] <- "NBD"
+ctTable <- dataLoadT1D()
 
 ## calculate log2Ex, reformat ctTable, and normalize values
 ctNorm <- cleanCt(ctTable, summaryOutput=T, cumExpCutoff = F, normGene = "none")
@@ -76,28 +68,32 @@ ctNorm <- cleanCt(ctTable, summaryOutput=T, cumExpCutoff = F, normGene = "none")
 ```
 
 
+```{r}
+ctNorm[is.na(ctNorm)] <- 0 
+```
+
 
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## cluster and filter
-ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 9, plotHeatmap=T, plotClustOnly=F,
-                          heatmapFactor = "kmeans.cluster", heatmapColorBy = c("age", "probe"),
-                          heatmapTissueLabel = "UCMAIT samples",
+ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 2, plotHeatmap=T, plotClustOnly=F,
+                          heatmapFactor = "kmeans.cluster", heatmapColorBy = c("age","probe", "soucre"),
+                          heatmapTissueLabel = "T1D Samples",
                           fisherTests = c("probe", "tissue", "age"),
-                         # fisherTests = NULL,
-                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = c(6))
+                          # fisherTests = NULL,
+                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = c(2))
 ```
 
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## cluster again to check performance
 ctClust <- subset(ctClust, select = -kmeans.cluster)
-ctClust <- clusterFilter(ctClust, testK = T, numCenters = 8, plotHeatmap=T, plotClustOnly=F,
+ctClust <- clusterFilter(ctClust, testK = T, numCenters = 4, plotHeatmap=T, plotClustOnly=F,
                           heatmapFactor = "kmeans.cluster",
-                          heatmapColorBy = c("age", "probe"),
-                          heatmapTissueLabel = "filtered UCMAIT samples",
+                          heatmapColorBy = c("age","probe", "soucre"),
+                          heatmapTissueLabel = "Filtered T1D Samples",
                           fisherTests = c("probe", "tissue", "age"),
-                         # fisherTests = NULL,
+                          # fisherTests = NULL,
                           cumulativeExpHist = T, filterClusters = F, clustersToRemove = NULL)
 
 ```
@@ -105,7 +101,7 @@ ctClust <- clusterFilter(ctClust, testK = T, numCenters = 8, plotHeatmap=T, plot
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 #### t-sne reports ####
-plotTSNE(ctClust, colorby = c("kmeans.cluster", "probe", "patient", "age"))
+plotTSNE(ctClust, colorby = c("kmeans.cluster", "patient", "cohort", "marker", "Tpype_marker"))
 ```
 
 
@@ -113,48 +109,54 @@ plotTSNE(ctClust, colorby = c("kmeans.cluster", "probe", "patient", "age"))
 #### violins ####
 
 ## Differentially expressed genes between cluster
-violinPlot(ctGenes=ctClust, 
-           byFactor="kmeans.cluster", 
-           factorOrder=c(1:5),
-           groupLabel="clusters", 
+violinPlot(ctGenes=ctClust,
+           byFactor="kmeans.cluster",
+           factorOrder=c(1:4),
+           groupLabel="clusters",
            extraLabel="for human samples",
-           dotSize = 1.5, 
+           dotSize = 1.5,
            dotAlpha = 0.3)
 
 ##  Differentially expressed genes between patients
-violinPlot(ctGenes=ctClust, 
-           byFactor="probe", 
-           factorOrder=c("UCM5", "UCM6", "UCM10", "UCM12", "UCM13", "UCM14", "UCM15", "UCM16", "UCM17", "NBD1", "NBD3", "NBD4"),
-           groupLabel="patients", 
-           extraLabel="for human samples",
-           dotSize = 1.5, 
-           dotAlpha = 0.3)
+# violinPlot(ctGenes=ctClust,
+#            byFactor="probe",
+#            factorOrder=c("RAD1","RAD2","RAD3","RAD4","RAD5","RAD6","TEY3","TEY6","TEY8","TEY14",
+#                          "TNET1","TNET2","TNET3","TNET4","Healthy"),
+#            groupLabel="patients",
+#            extraLabel="for human samples",
+#            dotSize = 1.5,
+#            dotAlpha = 0.3)
 
-##  Differentially expressed genes between tissues
+##  Differentially expressed genes between cohorts
 violinPlot(ctGenes=ctClust,
            byFactor="cellSource",
-           factorOrder=c("blood", "tissue"),
-           groupLabel="tissues",
+           factorOrder=c("Child","Adult","Risk","Healthy"),
+           groupLabel="Cohorts",
            extraLabel="for human samples",
            dotSize = 1.5,
            dotAlpha = 0.3)
 
-##  Differentially expressed genes between tissues
+##  Differentially expressed genes between markers
 violinPlot(ctGenes=ctClust,
            byFactor="age",
-           factorOrder=c("infl", "uninfl"),
-           groupLabel="tissues",
+           factorOrder=c("PD1-/ICOS-", "PD1+/ICOS+", "PD1+/ICOS-", "ICOS+/PD1-", "PD1-/CXCR3-",
+                         "PD1+/CXCR3+", "CXCR3+/PD1-","12-20", "13-21", "CP11", "CP13", "CP18"),
+           groupLabel="Markers",
            extraLabel="for human samples",
            dotSize = 1.5,
            dotAlpha = 0.3)
 
-##  Differentially expressed genes between phenotypes
-ctClust[grep("UCM", ctClust$probe, fixed=TRUE), "cellSource"] <- "UCM"
-ctClust[grep("NBD", ctClust$probe, fixed=TRUE), "cellSource"] <- "NBD"
+##  Differentially expressed genes between types of markers
+for (m in c("12-20", "13-21", "CP11", "CP13", "CP18")){
+  ctClust[grep(m, ctClust$age, fixed=TRUE), "age"] <- "Tetramer"
+}
+for (m in c("PD1-/ICOS-", "PD1+/ICOS+", "PD1+/ICOS-", "ICOS+/PD1-", "PD1-/CXCR3-","PD1+/CXCR3+", "CXCR3+/PD1-")){
+  ctClust[grep(m, ctClust$age, fixed=TRUE), "age"] <- "Surface"
+}
 violinPlot(ctGenes=ctClust,
-           byFactor="cellSource",
-           factorOrder=c("UCM", "NBD"),
-           groupLabel="phenotypes",
+           byFactor="age",
+           factorOrder=c("Tetramer", "Surface"),
+           groupLabel="Types of Markers",
            extraLabel="for human samples",
            dotSize = 1.5,
            dotAlpha = 0.3)

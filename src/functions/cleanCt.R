@@ -36,6 +36,12 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   
   ## rename duplicate cellTypes (might need to double check new data)
   for(dup in unique(ctByGene$cellType)){
+    if(length(which(ctByGene$cellType==dup)) > 384){
+      ctByGene[which(ctByGene$cellType==dup),"cellType"][385:480] <- paste(dup, "_5", sep="")
+      ctByGene[which(ctByGene$cellType==dup),"cellType"][289:384] <- paste(dup, "_4", sep="")
+      ctByGene[which(ctByGene$cellType==dup),"cellType"][193:288] <- paste(dup, "_3", sep="")
+      ctByGene[which(ctByGene$cellType==dup),"cellType"][97:192] <- paste(dup, "_2", sep="")
+    }
     if(length(which(ctByGene$cellType==dup)) > 288){
       ctByGene[which(ctByGene$cellType==dup),"cellType"][289:384] <- paste(dup, "_4", sep="")
       ctByGene[which(ctByGene$cellType==dup),"cellType"][193:288] <- paste(dup, "_3", sep="")
@@ -49,6 +55,17 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
       ctByGene[which(ctByGene$cellType==dup),"cellType"][97:192] <- paste(dup, "_2", sep="")
     }
   }
+  
+  ## Test
+  # max <- 0
+  # for(dup in unique(ctByGene$cellType)){
+  #   num <- length(which(ctByGene$cellType==dup))
+  #   if (num > max){
+  #     max <- num
+  #   }
+  # }
+  # print(max)
+  
   
   ## melt/cast to reformat
   ctCast <- recast(ctByGene, cellSource + probe + age + SPA + SPAM + SPAMcell + cellType ~ gene)
