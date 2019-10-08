@@ -111,6 +111,11 @@ plotTSNE(ctSelect_bind, colorby = c("patient", "cohort", "marker"))
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Select all cell with Tetramer Markers
+ctSelect <- ctClust
+# ctSelect_bind <- ctSelect[ctSelect$age == "12-20", ]
+# for (i in c("13-21", "CP11", "CP13", "CP18")){
+#  ctSelect_bind <- rbind(ctSelect_bind, ctSelect[ctSelect$age == i, ])
+# }
 ctSelect_bind <- rbind(ctSelect_bind, ctSelect[ctSelect$age == "PD1+/ICOS+", ])
 
 #### t-sne reports ####
