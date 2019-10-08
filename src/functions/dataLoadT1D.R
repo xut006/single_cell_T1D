@@ -115,6 +115,11 @@ dataLoadT1D <- function(){
   # ctTableCombine[grepl("empty", ctTableCombine$cellType, fixed=TRUE), "age"] <- "control"
   # ctTableCombine[grepl("EMTPY", ctTableCombine$cellType, fixed=TRUE), "age"] <- "control"
   
+  ## Order of labeling is improtant
+  
+  ## Surface marker: PD1/CXCR3 double negtive & PD1/CXCR3 double positive
+  ctTableCombine[grepl("DN", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1-/CXCR3-"
+  ctTableCombine[grepl("DP", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1+/CXCR3+"
   ## Surface marker: PD1 positive
   ctTableCombine[grepl("PD1", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1+/ICOS-"
   ctTableCombine[grepl("PD1+", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1+/ICOS-"
@@ -138,10 +143,10 @@ dataLoadT1D <- function(){
   ## Surface marker: PD1/CXCR3 double negtive
   ctTableCombine[grepl("CXCR3 PD1 DN", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1-/CXCR3-"
   ctTableCombine[grepl("PD1/CXCR3 -/-", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1-/CXCR3-" ## 0
-  ctTableCombine[grepl("DN", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1-/CXCR3-"
   ## Surface marker: PD1/CXCR3 double positive
   ctTableCombine[grepl("CXCR3+ PD1+ DP", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1+/CXCR3+"
-  ctTableCombine[grepl("DP", ctTableCombine$cellType, fixed=TRUE), "age"] <- "PD1+/CXCR3+"
+  
+  
   
   ## Tetramer markers: 12-20
   ctTableCombine[grepl("12-20+", ctTableCombine$cellType, fixed=TRUE), "age"] <- "12-20"

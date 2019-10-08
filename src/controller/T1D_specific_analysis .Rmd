@@ -1,0 +1,125 @@
+---
+title: "T1D_specific_analysis"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+knitr::opts_knit$set(global.par = TRUE)
+```
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+library(plyr)
+library(ggplot2)
+library(RColorBrewer)
+library(reshape2)
+library(gplots)
+library(gtools)
+library(stats)
+library(lattice)
+library(latticeExtra)
+library(grid)
+library(gridExtra)
+library(wesanderson)
+library(Rtsne)
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+
+## set baseDir if Knitting with RStudio button
+baseDir <- "~/Desktop/Su Lab/single_cell_T1D/"
+
+## sets path if run from runAnalysis.R
+#currentFile <- rstudioapi::getActiveDocumentContext()$path
+#baseDir <- gsub("single_cell_T1D/.*", "single_cell_T1D/", currentFile)
+
+#### source function scripts ####
+funcDir <- paste(baseDir, "src/functions/", sep="")
+funcFiles <- c("formatRaw.R", 
+               "dataLoadT1D.R", 
+               "cleanCt.R", 
+               "geneSetEnrichment.R", 
+               "violinPlot.R", 
+               "heatmap2_custom.R",
+               "heatmap.3.R",
+               "clusterFilter.R",
+               "tableBarPlots.R",
+               "clusterReport.R",
+               "reportViolins.R",
+               "reportTSNE.R",
+               "plotTSNE.R")
+funcFiles <- paste(funcDir, funcFiles, sep="")
+for(file in funcFiles){
+  source(file)
+}
+
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## load data
+ctTable <- dataLoadT1D()
+
+## calculate log2Ex, reformat ctTable, and normalize values
+ctNorm <- cleanCt(ctTable, summaryOutput=T, cumExpCutoff = F, normGene = "none")
+```
+
+
+```{r}
+ctNorm[is.na(ctNorm)] <- 0 
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## cluster and filter out low expression cells
+ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 2, plotHeatmap=T, plotClustOnly=F,
+                          heatmapFactor = "kmeans.cluster", heatmapColorBy = c("age","probe", "soucre"),
+                          heatmapTissueLabel = "T1D Samples",
+                          fisherTests = c("probe", "tissue", "age"),
+                          # fisherTests = NULL,
+                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = c(2))
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Select PD1+/ICOS+ cells from RAD and TNET 
+ctSelect <- ctClust
+ctSelect_RAD <- ctSelect[grepl("RAD", ctSelect$probe, fixed=TRUE), ]
+ctSelect_TNET <- ctSelect[grepl("TNET", ctSelect$probe, fixed=TRUE), ]
+ctSelect = rbind(ctSelect_RAD, ctSelect_TNET)
+ctSelect <- ctSelect[ctSelect$age == "PD1+/ICOS+", ]
+
+#### t-sne reports ####
+plotTSNE(ctSelect, colorby = c("patient", "cohort"))
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Select all cell with Tetramer Markers
+ctSelect <- ctClust
+ctSelect_bind <- ctSelect[ctSelect$age == "12-20", ]
+for (i in c("13-21", "CP11", "CP13", "CP18")){
+  ctSelect_bind <- rbind(ctSelect_bind, ctSelect[ctSelect$age == i, ])
+}
+
+#### t-sne reports ####
+plotTSNE(ctSelect_bind, colorby = c("patient", "cohort", "marker"))
+```
+
+
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Select all cell with Tetramer Markers
+ctSelect_bind <- rbind(ctSelect_bind, ctSelect[ctSelect$age == "PD1+/ICOS+", ])
+
+#### t-sne reports ####
+plotTSNE(ctSelect_bind, colorby = c("Tpype_marker", "cohort", "marker"))
+```
+
+
+
+
+
+
+
