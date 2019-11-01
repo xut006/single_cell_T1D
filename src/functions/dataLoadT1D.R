@@ -1,5 +1,6 @@
-#### load UC-MAIT data ####
+#### load T1D data ####
 
+## preprocess the datafram by: sed '1,11d' *.csv > *.csv.trimmed
 
 dataLoadT1D <- function(){
   ## set data directory
@@ -46,6 +47,10 @@ dataLoadT1D <- function(){
                        header=TRUE, stringsAsFactors=FALSE)
   ctTable8$probe <- "RAD3"
   
+  ctTable16 <- read.csv(paste(dataDir, "1362427424_RAD005.csv.trimmed", sep=""),
+                      header=TRUE, stringsAsFactors=FALSE)
+  ctTable16$probe <- "RAD5"
+  
   
   ### read in Adults data
   ctTable9 <- read.csv(paste(dataDir, "1362292377-TEY006-TEY014.csv.trimmed", sep=""), 
@@ -61,6 +66,10 @@ dataLoadT1D <- function(){
   ctTable10$probe <- NA
   ctTable10[grepl("TEY003", ctTable10$Name, fixed=TRUE), "probe"] <- "TEY3"
   ctTable10[grepl("TEY008", ctTable10$Name, fixed=TRUE), "probe"] <- "TEY8"
+  
+  ctTable17 <- read.csv(paste(dataDir, "1362427423_T004tetramers.csv.trimmed", sep=""),
+                        header=TRUE, stringsAsFactors=FALSE)
+  ctTable17$probe <- "TEY4"
   
   
   ### read in At_Ristk data
@@ -86,11 +95,21 @@ dataLoadT1D <- function(){
   ctTable15$probe <- "TNET4"
   
   
+  ### read in Normal Blood Donor data
+  ctTable18 <- read.csv(paste(dataDir, "1362427412-TC017.csv.trimmed", sep=""),
+                        header=TRUE, stringsAsFactors=FALSE)
+  ctTable18$probe <- "NBD"
+
+  ctTable19 <- read.csv(paste(dataDir, "1362427336_T-C012.csv.trimmed", sep=""),
+                        header=TRUE, stringsAsFactors=FALSE)
+  ctTable19$probe <- "NBD"
+  
   
   
   ## everything
   ctTableCombine <- rbind(ctTable1, ctTable2, ctTable3, ctTable4, ctTable5, ctTable6, ctTable7, ctTable8, 
-                          ctTable9, ctTable10, ctTable11, ctTable12, ctTable13, ctTable14, ctTable15)
+                          ctTable9, ctTable10, ctTable11, ctTable12, ctTable13, ctTable14, ctTable15,
+                          ctTable16, ctTable17, ctTable18, ctTable19)
   ## change column names
   names(ctTableCombine)[c(2, 5, 7)] <- c("cellType", "gene", "ct")
   

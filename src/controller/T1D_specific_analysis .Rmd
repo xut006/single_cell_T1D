@@ -23,6 +23,7 @@ library(grid)
 library(gridExtra)
 library(wesanderson)
 library(Rtsne)
+library(viridis)
 ```
 
 
@@ -37,19 +38,16 @@ baseDir <- "~/Desktop/Su Lab/single_cell_T1D/"
 
 #### source function scripts ####
 funcDir <- paste(baseDir, "src/functions/", sep="")
-funcFiles <- c("formatRaw.R", 
-               "dataLoadT1D.R", 
+funcFiles <- c("dataLoadT1D.R", 
                "cleanCt.R", 
-               "geneSetEnrichment.R", 
-               "violinPlot.R", 
                "heatmap2_custom.R",
                "heatmap.3.R",
                "clusterFilter.R",
                "tableBarPlots.R",
                "clusterReport.R",
-               "reportViolins.R",
-               "reportTSNE.R",
-               "plotTSNE.R")
+               "plotTSNE.R",
+               "geneExpressHistogram.R",
+               "compareTopGenes.R")
 funcFiles <- paste(funcDir, funcFiles, sep="")
 for(file in funcFiles){
   source(file)
@@ -72,7 +70,35 @@ ctNorm[is.na(ctNorm)] <- 0
 ```
 
 
+### For all Tetramer cells
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Select all cell with Tetramer Markers
+ctSelect <- ctNorm
+all_Tetramer <- ctSelect[ctSelect$age == "12-20", ]
+for (i in c("13-21", "CP11", "CP13", "CP18")){
+  all_Tetramer <- rbind(all_Tetramer, ctSelect[ctSelect$age == i, ])
+}
+
+## Plot number of gene expressed distribution for all selected cells and get top 20 expressed genes
+top_20Tetramer <- geneExpressHistogram(all_Tetramer, num_top = 20)
+```
+
+
+### For all PD1+/ICOS+ cells
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Select all PD1+/ICOS+ cells
+ctSelect <- ctNorm
+all_PD1ICOS <- ctSelect[ctSelect$age == "PD1+/ICOS+", ]
+
+## Plot number of gene expressed distribution for all selected cells and get top 20 expressed genes
+top_20PD1ICOS <- geneExpressHistogram(all_PD1ICOS, num_top = 20)
+
+## Cross compare the top expressed genes
+ctCompare <- compareTopGenes(all_PD1ICOS, top_20Tetramer)
+```
+
+
+```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## cluster and filter out low expression cells
 ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 2, plotHeatmap=T, plotClustOnly=F,
                           heatmapFactor = "kmeans.cluster", heatmapColorBy = c("age","probe", "soucre"),
@@ -83,7 +109,7 @@ ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 2, plotHeatmap=T, plotC
 ```
 
 
-```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Select PD1+/ICOS+ cells from RAD and TNET 
 ctSelect <- ctClust
 ctSelect_RAD <- ctSelect[grepl("RAD", ctSelect$probe, fixed=TRUE), ]
@@ -96,7 +122,7 @@ plotTSNE(ctSelect, colorby = c("patient", "cohort"))
 ```
 
 
-```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Select all cell with Tetramer Markers
 ctSelect <- ctClust
 ctSelect_bind <- ctSelect[ctSelect$age == "12-20", ]
@@ -109,7 +135,7 @@ plotTSNE(ctSelect_bind, colorby = c("patient", "cohort", "marker"))
 ```
 
 
-```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Select all cell with Tetramer Markers
 ctSelect <- ctClust
 # ctSelect_bind <- ctSelect[ctSelect$age == "12-20", ]

@@ -200,5 +200,4 @@ plotTSNE <- function(ctClust, colorby = c("kmeans.cluster", "patient", "cohort",
   }
   
   
-  
 }
