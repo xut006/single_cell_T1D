@@ -23,7 +23,8 @@ library(grid)
 library(gridExtra)
 library(wesanderson)
 library(Rtsne)
-library(viridis)
+library(tidyverse)
+library(pheatmap)
 ```
 
 
@@ -94,7 +95,9 @@ all_PD1ICOS <- ctSelect[ctSelect$age == "PD1+/ICOS+", ]
 top_20PD1ICOS <- geneExpressHistogram(all_PD1ICOS, num_top = 20)
 
 ## Cross compare the top expressed genes
-ctCompare <- compareTopGenes(all_PD1ICOS, top_20Tetramer)
+# ctCompare <- compareTopGenes(all_PD1ICOS, top_20Tetramer)
+heatmap_df <- all_PD1ICOS[top_20Tetramer]
+pheatmap(t(heatmap_df), fontsize = 28)
 ```
 
 
