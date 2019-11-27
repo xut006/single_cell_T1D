@@ -74,9 +74,9 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   #### remove outliers and normalize ####
   ## remove cells with no expression of any gene
   cellsTotal <- nrow(ctCast)
-  cellsWithNoExp <- nrow(ctCast[which(rowSums(ctCast[,9:ncol(ctCast)], na.rm=T) == 0),])
+  cellsWithNoExp <- nrow(ctCast[which(rowSums(ctCast[,8:ncol(ctCast)], na.rm=T) == 0),])
   
-  ctCast <- ctCast[which(rowSums(ctCast[,9:ncol(ctCast)], na.rm=T) > 0),]
+  ctCast <- ctCast[which(rowSums(ctCast[,8:ncol(ctCast)], na.rm=T) > 0),]
   
   if(summaryOutput==T){
     cat(paste("No expression detected in ", cellsWithNoExp, "/", cellsTotal, " cells", sep=""))
@@ -129,7 +129,7 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
     #   gapdhNorm <- 10 - median(ctCast$normGene)
     #   ctCast$normGene <- ctCast$normGene + gapdhNorm
     ## assuming consistent normGene expression
-    ctNorm <- ctCast[,9:ncol(ctCast)] - ctCast[, normGene]
+    ctNorm <- ctCast[,8:ncol(ctCast)] - ctCast[, normGene]
     ## scale back to 0 expression reference
     # ctNorm <- ctNorm + median(ctCast$normGene)
     ## NO normGene Normalization ##
@@ -163,7 +163,7 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   }
   
   ## calculate total expression and remove outliers
-  ctNorm$ctSum <- rowSums(ctNorm[,9:ncol(ctNorm)])
+  ctNorm$ctSum <- rowSums(ctNorm[,8:ncol(ctNorm)])
   
   if(summaryOutput==T){
     par(mar=c(50, 50, 50, 50))
@@ -207,6 +207,35 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   ctNorm$ctSum <- NULL
   
   par(mar=c(5, 5, 5, 5))
+  
+  
+  ## Correct duplication of gene names in the dataframe
+  index = 1
+  for (value in ctNorm$CD274){
+    if (is.na(value)){
+      ctNorm$CD274[index] <- ctNorm$`PDL-1`[index]
+    }
+    index = index + 1
+  }
+  ctNorm <- subset(ctNorm, select = -c(`PDL-1`))
+  
+  index = 1
+  for (value in ctNorm$NR4A1){
+    if (is.na(value)){
+      ctNorm$NR4A1[index] <- ctNorm$NUR77[index]
+    }
+    index = index + 1
+  }
+  ctNorm <- subset(ctNorm, select = -c(NUR77))
+  
+  index = 1
+  for (value in ctNorm$PD1){
+    if (is.na(value)){
+      ctNorm$PD1[index] <- ctNorm$PDCD1[index]
+    }
+    index = index + 1
+  }
+  ctNorm <- subset(ctNorm, select = -c(PDCD1))
   
   return(ctNorm)
 }

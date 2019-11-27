@@ -48,7 +48,8 @@ funcFiles <- c("dataLoadT1D.R",
                "clusterReport.R",
                "plotTSNE.R",
                "geneExpressHistogram.R",
-               "compareTopGenes.R")
+               "compareTopGenes.R",
+               "SpecificHeatMap.R")
 funcFiles <- paste(funcDir, funcFiles, sep="")
 for(file in funcFiles){
   source(file)
@@ -66,8 +67,8 @@ ctNorm <- cleanCt(ctTable, summaryOutput=T, cumExpCutoff = F, normGene = "none")
 ```
 
 
-```{r}
-ctNorm[is.na(ctNorm)] <- 0 
+```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+#ctNorm[is.na(ctNorm)] <- 0 
 ```
 
 
@@ -75,13 +76,20 @@ ctNorm[is.na(ctNorm)] <- 0
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Select all cell with Tetramer Markers
 ctSelect <- ctNorm
-all_Tetramer <- ctSelect[ctSelect$age == "12-20", ]
-for (i in c("13-21", "CP11", "CP13", "CP18")){
-  all_Tetramer <- rbind(all_Tetramer, ctSelect[ctSelect$age == i, ])
+all_Tetramer_all <- ctSelect[ctSelect$age == "12-20", ]
+for (i in c("13-21", "CP11", "CP13", "CP18", "Alt1-9")){
+  all_Tetramer_all <- rbind(all_Tetramer_all, ctSelect[ctSelect$age == i, ])
 }
+## Selecvt only Child and Risk corhorts for analysis
+all_Tetramer <- all_Tetramer_all[all_Tetramer_all$cellSource == "Child", ]
+all_Tetramer <- rbind(all_Tetramer, all_Tetramer_all[all_Tetramer_all$cellSource == "Risk", ])
 
 ## Plot number of gene expressed distribution for all selected cells and get top 20 expressed genes
 top_20Tetramer <- geneExpressHistogram(all_Tetramer, num_top = 20)
+
+## Plot the heatmap for top_20 tetramer genes on all_tetramer cells
+topT_T_df <- all_Tetramer[top_20Tetramer]
+pheatmap(t(topT_T_df), fontsize = 28)
 ```
 
 
@@ -89,15 +97,40 @@ top_20Tetramer <- geneExpressHistogram(all_Tetramer, num_top = 20)
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Select all PD1+/ICOS+ cells
 ctSelect <- ctNorm
-all_PD1ICOS <- ctSelect[ctSelect$age == "PD1+/ICOS+", ]
+all_PD1ICOS_all <- ctSelect[ctSelect$age == "PD1+/ICOS+", ]
+## Selecvt only Child and Risk corhorts for analysis
+all_PD1ICOS <- all_PD1ICOS_all[all_PD1ICOS_all$cellSource == "Child", ]
+all_PD1ICOS <- rbind(all_PD1ICOS, all_PD1ICOS_all[all_PD1ICOS_all$cellSource == "Risk", ])
 
 ## Plot number of gene expressed distribution for all selected cells and get top 20 expressed genes
 top_20PD1ICOS <- geneExpressHistogram(all_PD1ICOS, num_top = 20)
 
+## Plot the heatmap for top_20 PD1ICOS genes on all_PD1ICOS cells
+topPI_PI_df <- all_PD1ICOS[top_20PD1ICOS]
+pheatmap(t(topPI_PI_df), fontsize = 28)
+```
+
+
+### Cross comparison heat map: PD1+/ICOS+ cells with top_20 Tetramer expressing genes
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Cross compare the top expressed genes
-# ctCompare <- compareTopGenes(all_PD1ICOS, top_20Tetramer)
-heatmap_df <- all_PD1ICOS[top_20Tetramer]
-pheatmap(t(heatmap_df), fontsize = 28)
+topT_PI_df <- all_PD1ICOS[top_20Tetramer]
+pheatmap(t(topT_PI_df), fontsize = 28)
+```
+
+
+### Cross comparison heat map: Tetramer cells with top_20 PD1+/ICOS+ expressing genes
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Cross compare the top expressed genes
+topPI_T_df <- all_Tetramer[top_20PD1ICOS]
+pheatmap(t(topPI_T_df), fontsize = 28)
+```
+
+
+### Tetramer cells with Low/High expression level analysis and Cross Comparision
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Separated analysis for cell with low and high expression level
+SpecificHeatMap(all_Tetramer, low_Cut = 7, high_cut = 27, num_top = 20, all_PD1ICOS, top_20PD1ICOS)
 ```
 
 

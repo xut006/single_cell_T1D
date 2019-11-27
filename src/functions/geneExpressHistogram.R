@@ -38,7 +38,7 @@ geneExpressHistogram <- function(ctSelect, num_top = 20){
   active_genes <- data.frame()
   for (j in 8:(ncol(ctSelect)-1)){
     num_active = 0
-    for (i in 1:(nrow(ctSelect)-1)){
+    for (i in 1:nrow(ctSelect)){
       if (ctSelect[i,j] != 0){
         num_active  = num_active+1
       }

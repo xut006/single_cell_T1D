@@ -180,9 +180,17 @@ dataLoadT1D <- function(){
   ctTableCombine[grepl("CP11", ctTableCombine$cellType, fixed=TRUE), "age"] <- "CP11"
   ## Tetramer markers: CP13
   ctTableCombine[grepl("CP13+", ctTableCombine$cellType, fixed=TRUE), "age"] <- "CP13"
+  ctTableCombine[grepl("CP13", ctTableCombine$cellType, fixed=TRUE), "age"] <- "CP13"
   ## Tetramer markers: CP18
   ctTableCombine[grepl("CP18+", ctTableCombine$cellType, fixed=TRUE), "age"] <- "CP18"
+  ctTableCombine[grepl("CP18", ctTableCombine$cellType, fixed=TRUE), "age"] <- "CP18"
+  ## Tetramer markers: Alt 1-9 
+  ctTableCombine[grepl("Alt_1-9", ctTableCombine$cellType, fixed=TRUE), "age"] <- "Alt1-9"
   
+  
+  
+  ## Bulk_CD4+_T_cell Markers
+  ctTableCombine[grepl("Bulk_CD4+", ctTableCombine$cellType, fixed=TRUE), "age"] <- "Bulk_CD4+"
   
 
   
