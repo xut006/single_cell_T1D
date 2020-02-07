@@ -1,5 +1,5 @@
 ---
-title: "T1D_analysis"
+title: "T1D_Tetramer_Cells_Analysis"
 output:
   pdf_document: default
   html_document: default
@@ -64,44 +64,48 @@ ctTable <- dataLoadT1D()
 
 ## calculate log2Ex, reformat ctTable, and normalize values
 ctNorm <- cleanCt(ctTable, summaryOutput=T, cumExpCutoff = F, normGene = "none")
-
 ```
 
-
-```{r}
-ctNorm[is.na(ctNorm)] <- 0 
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+## Keep only Tetramer cells
+ctNorm <- ctNorm[ctNorm$markerType == "Tetramer", ]
+cellsTotal <- nrow(ctNorm)
+cellsWithNoExp <- nrow(ctNorm[which(rowSums(ctNorm[,9:ncol(ctNorm)], na.rm=T) == 0),])
+  
+ctNorm <- ctNorm[which(rowSums(ctNorm[,9:ncol(ctNorm)], na.rm=T) > 0),]
+  
+cat(paste("No expression detected in ", cellsWithNoExp, "/", cellsTotal, " Tetramer cells", sep=""))
 ```
-
 
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## cluster and filter
-ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 2, plotHeatmap=T, plotClustOnly=F,
-                          heatmapFactor = "kmeans.cluster", heatmapColorBy = c("age","probe", "soucre"),
-                          heatmapTissueLabel = "T1D Samples",
-                          fisherTests = c("probe", "tissue", "age"),
+ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 3, plotHeatmap=T, plotClustOnly=F,
+                          heatmapFactor = "kmeans.cluster", heatmapColorBy = c("marker", "cohort"),
+                          heatmapcohortLabel = "T1D Samples",
+                          fisherTests = c("cohort", "marker"),
                           # fisherTests = NULL,
-                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = c(2))
+                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = NULL)
 ```
 
 
-```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## cluster again to check performance
-ctClust <- subset(ctClust, select = -kmeans.cluster)
-ctClust <- clusterFilter(ctClust, testK = T, numCenters = 4, plotHeatmap=T, plotClustOnly=F,
-                          heatmapFactor = "kmeans.cluster",
-                          heatmapColorBy = c("age","probe", "soucre"),
-                          heatmapTissueLabel = "Filtered T1D Samples",
-                          fisherTests = c("probe", "tissue", "age"),
-                          # fisherTests = NULL,
-                          cumulativeExpHist = T, filterClusters = F, clustersToRemove = NULL)
+# ctClust <- subset(ctClust, select = -kmeans.cluster)
+# ctClust <- clusterFilter(ctClust, testK = T, numCenters = 4, plotHeatmap=T, plotClustOnly=F,
+#                           heatmapFactor = "kmeans.cluster",
+#                           heatmapColorBy = c("age","probe", "soucre"),
+#                           heatmapTissueLabel = "Filtered T1D Samples",
+#                           fisherTests = c("probe", "tissue", "age"),
+#                           # fisherTests = NULL,
+#                           cumulativeExpHist = T, filterClusters = F, clustersToRemove = NULL)
 
 ```
 
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 #### t-sne reports ####
-plotTSNE(ctClust, colorby = c("kmeans.cluster", "patient", "cohort", "marker", "Tpype_marker"))
+plotTSNE(ctClust, colorby = c("kmeans.cluster", "cohort", "marker"))
 ```
 
 
@@ -111,7 +115,7 @@ plotTSNE(ctClust, colorby = c("kmeans.cluster", "patient", "cohort", "marker", "
 ## Differentially expressed genes between cluster
 violinPlot(ctGenes=ctClust,
            byFactor="kmeans.cluster",
-           factorOrder=c(1:4),
+           factorOrder=c(1:3),
            groupLabel="clusters",
            extraLabel="for human samples",
            dotSize = 1.5,
@@ -129,37 +133,35 @@ violinPlot(ctGenes=ctClust,
 
 ##  Differentially expressed genes between cohorts
 violinPlot(ctGenes=ctClust,
-           byFactor="cellSource",
+           byFactor="cohort",
            factorOrder=c("Child","Adult","Risk","Healthy"),
            groupLabel="Cohorts",
            extraLabel="for human samples",
            dotSize = 1.5,
            dotAlpha = 0.3)
 
+##  Differentially expressed genes between types of markers
+# violinPlot(ctGenes=ctClust,
+#            byFactor="markerType",
+#            factorOrder=c("Tetramer", "Surface", "Bulk_CD4+"),
+#            groupLabel="Types of Markers",
+#            extraLabel="for human samples",
+#            dotSize = 1.5,
+#            dotAlpha = 0.3)
+
 ##  Differentially expressed genes between markers
 violinPlot(ctGenes=ctClust,
-           byFactor="age",
-           factorOrder=c("PD1-/ICOS-", "PD1+/ICOS+", "PD1+/ICOS-", "ICOS+/PD1-", "PD1-/CXCR3-",
-                         "PD1+/CXCR3+", "CXCR3+/PD1-","12-20", "13-21", "CP11", "CP13", "CP18"),
+           byFactor="marker",
+           factorOrder=c(#"PD1-/ICOS-", "PD1+/ICOS+", "PD1+/ICOS-", "ICOS+/PD1-", 
+                         #"PD1-/CXCR3-","PD1+/CXCR3+", "CXCR3+/PD1-",
+                         "12-20", "13-21", "CP11", "CP13", "CP18","Alt1-9", "CLIP"), 
+                         #"Bulk_CD4+"),
            groupLabel="Markers",
            extraLabel="for human samples",
            dotSize = 1.5,
            dotAlpha = 0.3)
 
-##  Differentially expressed genes between types of markers
-for (m in c("12-20", "13-21", "CP11", "CP13", "CP18")){
-  ctClust[grep(m, ctClust$age, fixed=TRUE), "age"] <- "Tetramer"
-}
-for (m in c("PD1-/ICOS-", "PD1+/ICOS+", "PD1+/ICOS-", "ICOS+/PD1-", "PD1-/CXCR3-","PD1+/CXCR3+", "CXCR3+/PD1-")){
-  ctClust[grep(m, ctClust$age, fixed=TRUE), "age"] <- "Surface"
-}
-violinPlot(ctGenes=ctClust,
-           byFactor="age",
-           factorOrder=c("Tetramer", "Surface"),
-           groupLabel="Types of Markers",
-           extraLabel="for human samples",
-           dotSize = 1.5,
-           dotAlpha = 0.3)
+
 
 #### bottom ####
 ```

@@ -1,4 +1,4 @@
-plotTSNE <- function(ctClust, colorby = c("kmeans.cluster", "patient", "cohort", "marker", "Tpype_marker")){
+plotTSNE <- function(ctClust, colorby = c("kmeans.cluster", "patient", "cohort", "marker", "markerType")){
   ctRep <- ctClust
   
   ## remove duplicated rows
@@ -19,19 +19,20 @@ plotTSNE <- function(ctClust, colorby = c("kmeans.cluster", "patient", "cohort",
   tsne_out <- Rtsne(as.matrix(ctRep[, 10:ncol(ctRep)]), perplexity = 30)
   
   tsne_y <- as.data.frame(cbind(tsne_out$Y, 
-                                ctRep$cellSource,
+                                ctRep$cohort,
                                 ctRep$kmeans.cluster,
-                                ctRep$age,
-                                ctRep$probe,
+                                ctRep$marker,
+                                ctRep$patients,
+                                ctRep$markerType,
                                 ctRep[, 10:ncol(ctRep)]))
   
-  names(tsne_y)[1:6] <- c("y1", "y2", "cohort", "kmeans.cluster", "marker", "patient")
+  names(tsne_y)[1:7] <- c("y1", "y2", "cohort", "kmeans.cluster", "marker", "patient", "markerType")
   #tsne_y$kmeans.cluster <- factor(tsne_y$kmeans.cluster, levels=clusters)
   #relcohorts <- unique(tsne_y$cohort)
   #relcohorts <- relcohorts[match(c("I", "LN", "S", "PB"), relcohorts, nomatch=F)]
   #tsne_y$cohort <- factor(tsne_y$cohort, levels=relcohorts)
   
-  for(i in c(1,2,7:ncol(tsne_y))){
+  for(i in c(1,2,8:ncol(tsne_y))){
     tsne_y[, i] <- as.numeric(tsne_y[, i])
   }
   
@@ -80,7 +81,8 @@ plotTSNE <- function(ctClust, colorby = c("kmeans.cluster", "patient", "cohort",
     plTSNE <- ggplot(tsne_y, aes(y1, y2)) +
       geom_point(aes(color=factor(tsne_y$patient)), size = pointSize, alpha = 1) +
       scale_color_manual(values = c("gray19","#DD8D29","#E1C408","#84BB78","#859C78","#DB6E07","#B40F20","#798E87",
-                                    "#C27D38","#CCC591","#29211F","#F3DF6C","#CEAB07","#D5D5D3","#24281A")) +
+                                    "#C27D38","#CCC591","#29211F","#F3DF6C","#CEAB07","#D5D5D3","#24281A",
+                                    "violetred4", "chartreuse3")) +
       scale_x_continuous(breaks=seq(min(tsne_y$y1), max(tsne_y$y1), length.out = 10),
                          minor_breaks = NULL) +
       scale_y_continuous(breaks=seq(min(tsne_y$y2), max(tsne_y$y2), length.out = 10),
@@ -135,17 +137,11 @@ plotTSNE <- function(ctClust, colorby = c("kmeans.cluster", "patient", "cohort",
   
   
   ## label cells by type of markers
-  if("Tpype_marker" %in% colorby){
-    tsne_y$type_marker <- NA
-    for (m in c("12-20", "13-21", "CP11", "CP13", "CP18")){
-      tsne_y[grep(m, tsne_y$marker, fixed=TRUE), "type_marker"] <- "Tetramer"
-    }
-    for (m in c("PD1-/ICOS-", "PD1+/ICOS+", "PD1+/ICOS-", "ICOS+/PD1-", "PD1-/CXCR3-","PD1+/CXCR3+", "CXCR3+/PD1-")){
-      tsne_y[grep(m, tsne_y$marker, fixed=TRUE), "type_marker"] <- "Surface"
-    }
+  if("markerType" %in% colorby){
     plTSNE <- ggplot(tsne_y, aes(y1, y2)) +
-      geom_point(aes(color=factor(tsne_y$type_marker)), size = pointSize, alpha = 1) +
-      scale_colour_manual(values=wes_palette("Moonrise3", 2)) +
+      geom_point(aes(color=factor(tsne_y$markerType)), size = pointSize, alpha = 1) +
+      scale_colour_manual(values=c("#9C964A", "#85D4E3", "#F4B5BD")) +
+      #scale_colour_manual(values=wes_palette("Moonrise3", 3)) +
       scale_x_continuous(breaks=seq(min(tsne_y$y1), max(tsne_y$y1), length.out = 10),
                          minor_breaks = NULL) +
       scale_y_continuous(breaks=seq(min(tsne_y$y2), max(tsne_y$y2), length.out = 10),
@@ -175,7 +171,7 @@ plotTSNE <- function(ctClust, colorby = c("kmeans.cluster", "patient", "cohort",
     plTSNE <- ggplot(tsne_y, aes(y1, y2)) +
       geom_point(aes(color=factor(tsne_y$marker)), size = pointSize, alpha = 1) +
       scale_colour_manual(values=c("#9A8822","#F5CDB4","#F8AFA8","#FDDDA0","#74A089","#FF0000","#556A5B","#50A45C",
-                                   "#F2AD00","#F69100","#C49647","#5BBCD6")) +
+                                   "#F2AD00","#F69100","#C49647","#5BBCD6", "royalblue3","moccasin","#9986A5")) +
       scale_x_continuous(breaks=seq(min(tsne_y$y1), max(tsne_y$y1), length.out = 10),
                          minor_breaks = NULL) +
       scale_y_continuous(breaks=seq(min(tsne_y$y2), max(tsne_y$y2), length.out = 10),

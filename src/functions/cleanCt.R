@@ -19,20 +19,20 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   
   #### reformat data ####
   ## take out control lanes
-  ctRaw <- subset(ctRaw, cellSource!="control")
+  ctRaw <- subset(ctRaw, cohort!="control")
   
   ## add combined fields
-  ctRaw$SPA <- paste(ctRaw$cellSource, ctRaw$probe, ctRaw$age, sep=".")
-  ctRaw$SPAM <- paste(ctRaw$cellSource, ctRaw$probe, ctRaw$age, sep=".")
+  ctRaw$SPA <- paste(ctRaw$cohort, ctRaw$patients, ctRaw$marker, sep=".")
+  ctRaw$SPAM <- paste(ctRaw$cohort, ctRaw$patients, ctRaw$marker, sep=".")
   
   ctRaw$cellID <- NA
   extractID <- function(x) regmatches(x ,regexpr("[0-9]+$", x))
   ctRaw$cellID <- sapply(ctRaw$cellType, extractID)
   
-  ctRaw$SPAMcell <- paste(ctRaw$cellSource, ctRaw$probe, ctRaw$age, ctRaw$cellID, sep=".")
+  ctRaw$SPAMcell <- paste(ctRaw$cohort, ctRaw$patients, ctRaw$marker, ctRaw$cellID, sep=".")
   
   ## keep relevant columns
-  ctByGene <- ctRaw[,c("cellSource", "probe", "age", "SPA", "SPAM", "SPAMcell", "cellType", "gene", "log2Ex")]
+  ctByGene <- ctRaw[,c("cohort", "patients", "marker", "markerType","SPA", "SPAM", "SPAMcell", "cellType", "gene", "log2Ex")]
   
   ## rename duplicate cellTypes (might need to double check new data)
   for(dup in unique(ctByGene$cellType)){
@@ -68,15 +68,42 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   
   
   ## melt/cast to reformat
-  ctCast <- recast(ctByGene, cellSource + probe + age + SPA + SPAM + SPAMcell + cellType ~ gene)
+  ctCast <- recast(ctByGene, cohort + patients + marker + markerType + SPA + SPAM + SPAMcell + cellType ~ gene)
   
+  ## Correct duplication of gene names in the dataframe
+  index = 1
+  for (value in ctCast$CD274){
+    if (is.na(value)){
+      ctCast$CD274[index] <- ctCast$`PDL-1`[index]
+    }
+    index = index + 1
+  }
+  ctCast <- subset(ctCast, select = -c(`PDL-1`))
+  
+  index = 1
+  for (value in ctCast$NR4A1){
+    if (is.na(value)){
+      ctCast$NR4A1[index] <- ctCast$NUR77[index]
+    }
+    index = index + 1
+  }
+  ctCast <- subset(ctCast, select = -c(NUR77))
+  
+  index = 1
+  for (value in ctCast$PD1){
+    if (is.na(value)){
+      ctCast$PD1[index] <- ctCast$PDCD1[index]
+    }
+    index = index + 1
+  }
+  ctCast <- subset(ctCast, select = -c(PDCD1))
   
   #### remove outliers and normalize ####
   ## remove cells with no expression of any gene
   cellsTotal <- nrow(ctCast)
-  cellsWithNoExp <- nrow(ctCast[which(rowSums(ctCast[,8:ncol(ctCast)], na.rm=T) == 0),])
+  cellsWithNoExp <- nrow(ctCast[which(rowSums(ctCast[,9:ncol(ctCast)], na.rm=T) == 0),])
   
-  ctCast <- ctCast[which(rowSums(ctCast[,8:ncol(ctCast)], na.rm=T) > 0),]
+  ctCast <- ctCast[which(rowSums(ctCast[,9:ncol(ctCast)], na.rm=T) > 0),]
   
   if(summaryOutput==T){
     cat(paste("No expression detected in ", cellsWithNoExp, "/", cellsTotal, " cells", sep=""))
@@ -129,7 +156,7 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
     #   gapdhNorm <- 10 - median(ctCast$normGene)
     #   ctCast$normGene <- ctCast$normGene + gapdhNorm
     ## assuming consistent normGene expression
-    ctNorm <- ctCast[,8:ncol(ctCast)] - ctCast[, normGene]
+    ctNorm <- ctCast[,9:ncol(ctCast)] - ctCast[, normGene]
     ## scale back to 0 expression reference
     # ctNorm <- ctNorm + median(ctCast$normGene)
     ## NO normGene Normalization ##
@@ -155,7 +182,7 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
       ctNorm[, i] <- ctNorm[, i] - median(ctNorm[, i])
     }
     
-    ctNorm <- cbind(ctCast[,1:8], ctNorm)
+    ctNorm <- cbind(ctCast[,1:9], ctNorm)
   }
   
   if(normGene == "none"){
@@ -163,7 +190,7 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   }
   
   ## calculate total expression and remove outliers
-  ctNorm$ctSum <- rowSums(ctNorm[,8:ncol(ctNorm)])
+  ctNorm$ctSum <- rowSums(ctNorm[,9:ncol(ctNorm)])
   
   if(summaryOutput==T){
     par(mar=c(50, 50, 50, 50))
@@ -209,33 +236,7 @@ cleanCt <- function(ctRaw, summaryOutput = FALSE, cumExpCutoff = 0, cumHist = F,
   par(mar=c(5, 5, 5, 5))
   
   
-  ## Correct duplication of gene names in the dataframe
-  index = 1
-  for (value in ctNorm$CD274){
-    if (is.na(value)){
-      ctNorm$CD274[index] <- ctNorm$`PDL-1`[index]
-    }
-    index = index + 1
-  }
-  ctNorm <- subset(ctNorm, select = -c(`PDL-1`))
   
-  index = 1
-  for (value in ctNorm$NR4A1){
-    if (is.na(value)){
-      ctNorm$NR4A1[index] <- ctNorm$NUR77[index]
-    }
-    index = index + 1
-  }
-  ctNorm <- subset(ctNorm, select = -c(NUR77))
-  
-  index = 1
-  for (value in ctNorm$PD1){
-    if (is.na(value)){
-      ctNorm$PD1[index] <- ctNorm$PDCD1[index]
-    }
-    index = index + 1
-  }
-  ctNorm <- subset(ctNorm, select = -c(PDCD1))
   
   return(ctNorm)
 }

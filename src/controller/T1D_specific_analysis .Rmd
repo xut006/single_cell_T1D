@@ -67,11 +67,6 @@ ctNorm <- cleanCt(ctTable, summaryOutput=T, cumExpCutoff = F, normGene = "none")
 ```
 
 
-```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
-#ctNorm[is.na(ctNorm)] <- 0 
-```
-
-
 ### For all Tetramer cells
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 ## Select all cell with Tetramer Markers
