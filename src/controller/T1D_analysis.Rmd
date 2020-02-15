@@ -23,6 +23,7 @@ library(grid)
 library(gridExtra)
 library(wesanderson)
 library(Rtsne)
+library(umap)
 ```
 
 
@@ -49,7 +50,8 @@ funcFiles <- c("formatRaw.R",
                "clusterReport.R",
                "reportViolins.R",
                "reportTSNE.R",
-               "plotTSNE.R")
+               "plotTSNE.R",
+               "plotUMAP.R")
 funcFiles <- paste(funcDir, funcFiles, sep="")
 for(file in funcFiles){
   source(file)
@@ -85,23 +87,26 @@ ctClust <- clusterFilter(ctNorm, testK = T, numCenters = 3, plotHeatmap=T, plotC
                           heatmapcohortLabel = "T1D Samples",
                           fisherTests = c("cohort", "marker"),
                           # fisherTests = NULL,
-                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = NULL)
+                          cumulativeExpHist = T, filterClusters = T, clustersToRemove = c(2, 3))
 ```
 
 
-```{r eval=FALSE, fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
-## cluster again to check performance
-# ctClust <- subset(ctClust, select = -kmeans.cluster)
-# ctClust <- clusterFilter(ctClust, testK = T, numCenters = 4, plotHeatmap=T, plotClustOnly=F,
-#                           heatmapFactor = "kmeans.cluster",
-#                           heatmapColorBy = c("age","probe", "soucre"),
-#                           heatmapTissueLabel = "Filtered T1D Samples",
-#                           fisherTests = c("probe", "tissue", "age"),
-#                           # fisherTests = NULL,
-#                           cumulativeExpHist = T, filterClusters = F, clustersToRemove = NULL)
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+# cluster again to check performance
+ctClust <- subset(ctClust, select = -kmeans.cluster)
+ctClust <- clusterFilter(ctClust, testK = T, numCenters = 3, plotHeatmap=T, plotClustOnly=F,
+                          heatmapFactor = "kmeans.cluster", heatmapColorBy = c("marker", "cohort"),
+                          heatmapcohortLabel = "T1D Samples",
+                          fisherTests = c("cohort", "marker"),
+                          # fisherTests = NULL,
+                          cumulativeExpHist = T, filterClusters = F, clustersToRemove = NULL)
 
 ```
 
+```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
+#### UMAP reports ####
+plotUMAP(ctClust, colorby = c("kmeans.cluster", "cohort", "marker"))
+```
 
 ```{r fig.width=22, fig.height=25, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE, comment=NA}
 #### t-sne reports ####
